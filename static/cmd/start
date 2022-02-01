@@ -1,0 +1,67 @@
+#!/bin/bash
+
+echo "running start"
+
+(dockerd-entrypoint.sh &)
+
+while (! docker stats --no-stream ); do
+  echo "Waiting for Docker to launch..."
+  sleep 1
+done
+
+
+echo "Provision K3d"
+sudo mount --make-shared /tmp
+mkdir /tmp/gitpod
+k3d cluster create --config k3d.yaml || true
+
+export KUBECONFIG="$(k3d kubeconfig write gitpod || true)"
+
+while (! kubectl get nodes ); do
+  echo "Waiting for k3s cluster to launch..."
+  sleep 1
+done
+
+echo "Installing Gitpod for K3d"
+
+echo "Updating helm repositories..."
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+echo "Installing cert-manager..."
+helm upgrade \
+    --atomic \
+    --cleanup-on-fail \
+    --create-namespace \
+    --install \
+    --namespace cert-manager \
+    --reset-values \
+    --set installCRDs=true \
+    --values=./cert-manager-values.yaml \
+    --wait \
+    cert-manager \
+    jetstack/cert-manager
+
+
+kubectl apply -f ./objects.yaml
+
+kubectl apply -f ./config/objects.yaml
+
+kubectl create secret generic --from-file=provider=./config/auth.yaml auth
+
+gitpod-installer validate config --config ./config/gitpod.yaml
+gitpod-installer validate cluster --kubeconfig ~/.kube/config --config ./config/gitpod.yaml
+
+gitpod-installer render --config ./config/gitpod.yaml > /tmp/gitpod.yaml
+
+yq eval 'with(select(.metadata.name == "ws-daemon" and .kind == "DaemonSet"); with(.spec.template.spec.initContainers.[]; del(select(.name == "disable-kube-health-monitor")))) | del(.. | select(has("mountPropagation")).mountPropagation)' /tmp/gitpod.yaml > /tmp/custom.gitpod.yaml
+
+kubectl apply -f /tmp/custom.gitpod.yaml
+
+while (true); do
+  while (! kubectl port-forward service/proxy --address 0.0.0.0 443:443 ); do
+    echo "Waiting for proxy..."
+    sleep 5
+  done
+done

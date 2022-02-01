@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+cd k3gitpods
+
+opt="$1";
+if [ $# -eq 0 ]; then
+    if [ "$(ls -A ./config)" ]; then
+        echo "config dir found and not empty"
+    else
+        echo "config dir empty or not found"
+        opt="init";
+    fi
+fi
+case "$opt" in
+    "init" )
+        ./cmd/init;;
+    *)  
+        ./cmd/start;;
+esac
