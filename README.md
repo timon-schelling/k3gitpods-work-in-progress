@@ -4,9 +4,13 @@ Me trying to run gitpod in a single easy to use container. Strongly inspired by 
 
 ## Intention
 
-The intention for this repo is to find a way of achieving:
-- installing Gitpod in a single container unsing k3s (k3d for provisioning cluster)
-- use the Gitpod Installer
+- installing Gitpod in a single container with no outside dependecies
+- unsing k3s and k3d for provisioning a cluster all inside one container
+- use the ✨NEW✨ Gitpod installer
+- run container rootles 🔐​​💻​⚠️
+- provide image that works out of the box with the correct config
+- add certmanager to enable easy cert creation 🐬
+- have fun 🌞😀🌈
 
 ## Linux - Getting Started
 
