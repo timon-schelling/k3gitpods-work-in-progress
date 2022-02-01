@@ -15,5 +15,5 @@ The intention for this repo is to find a way of achieving:
 3. run `run.sh` (`chmod +X ./run.sh && run.sh`)
 4. edit config files in `./config` acording to your own needs (provide certs, auth provider, etc.) 🔧🛠
 5. run `run.sh` again 🙄 (logs avaleable with `./logs.sh` or `docker logs -f k3gitpods`)
-6. wait until all pods are `Running` (observer with `./getpods.sh` `docker exec -it k3gitpods watch kubectl get pods`)
+6. wait until all pods are `Running` (observer with `./getpods.sh` or `docker exec -it k3gitpods watch kubectl get pods`)
 7. tell me (mail@timokrates.de) and your friends (if you have any 😥) about your succes 🌟🚀🌟
